@@ -11,12 +11,21 @@ var main_state = {
 
         // load bird sprite
         this.game.load.image('bird', 'assets/bird.png');
+
+        // load the pipe sprite
+        this.game.load.image('pipe', 'assets/pipe.png');
     },
 
     // Function called after 'preload' to setup the game
     create: function (){
         // display bird on screen
         this.bird = this.game.add.sprite(100, 245, 'bird');
+
+        // create group (pool) of pipes
+        this.pipes = game.add.group();
+        this.pipes.createMultiple(20, 'pipe');
+
+        this.timer = this.game.time.events.loop(1500, this.add_row_of_pipes, this);
 
         // add gravity to bird to make it fall
         this.bird.body.gravity.y = 1000;
@@ -40,10 +49,36 @@ var main_state = {
         this.bird.body.velocity.y = -350;
     },
 
+    add_one_pipe: function (x, y){
+        // get first dead pipe
+        var pipe = this.pipes.getFirstDead();
+
+        // set position of pipe
+        pipe.reset(x, y);
+
+        // add velocity to the pipe to make it move left
+        pipe.body.velocity.x = -200;
+
+        // kill the pipe when it's no longer visible
+        pipe.outOfBoundsKill = true;
+    },
+
+    add_row_of_pipes: function (){
+        var hole = Math.floor(Math.random() * 5) + 1;
+
+        for (var i = 0; i < 8; i++){
+            if (i != hole && i != hole + 1){
+                this.add_one_pipe(400, i * 60 + 10);
+            }
+        }
+    },
+
     // restart the game
     restart_game: function (){
         // start 'main' state, which restarts the game
         this.game.state.start('main');
+
+        this.game.time.events.remove(this.timer);
     }
 };
 
